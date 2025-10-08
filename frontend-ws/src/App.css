@@ -1,0 +1,12 @@
+.canvas {
+    border: 1px solid black;
+}
+
+.container{
+    max-width: 1200px;
+    margin: auto;
+}
+
+body {
+    margin: 50px;
+}
