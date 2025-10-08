@@ -3,9 +3,14 @@ import expressWs from "express-ws";
 import cors from "cors";
 import WebSocket from "ws";
 
+interface Message {
+    x: number;
+    y: number;
+}
+
 interface incomingMessage {
     type: string;
-    payload: {};
+    payload: Message;
 }
 
 const port = 8000;
@@ -18,15 +23,30 @@ wsInstance.applyTo(router);
 app.use(cors());
 
 const connectionClients: WebSocket[] = [];
-const messages: incomingMessage[] = [];
+const messages: Message[] = [];
 
 router.ws('/canvas-ws', (ws, _req) => {
     connectionClients.push(ws);
-    ws.send(JSON.stringify(messages));
+    ws.send(JSON.stringify({
+        type: 'ALL_MESSAGE',
+        payload: messages,
+    }));
 
-    let username = "Anonymous";
     ws.on('message', (message) => {
-
+        try{
+            const decodedMessage = JSON.parse(message.toString()) as incomingMessage;
+            if(decodedMessage.type === 'SEND_MESSAGE') {
+                messages.push(decodedMessage.payload)
+                connectionClients.forEach(clientMs => {
+                    clientMs.send(JSON.stringify({
+                        type: "NEW_MESSAGE",
+                        payload: decodedMessage.payload,
+                    }));
+                });
+            }
+        } catch (e) {
+            ws.send(JSON.stringify({error: "Invalid message"}));
+        }
     });
 
     ws.on('close', () => {
