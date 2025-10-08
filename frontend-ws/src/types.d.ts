@@ -1,6 +1,6 @@
 export interface IncomingMessage {
     type: string;
-    payload: Message[];
+    payload: Message[] | Message;
 }
 
 export interface Message {
